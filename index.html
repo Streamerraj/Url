@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Live Stream</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://content.jwplatform.com/libraries/IDzF9Zmk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     body {
       margin: 0;
@@ -14,19 +14,19 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start; /* Player moves to top */
+      justify-content: flex-start;
       min-height: 100vh;
       padding-top: 10px;
     }
-    #player, #fallbackVideo {
+    video {
       width: 100%;
       max-width: 900px;
       aspect-ratio: 16/9;
       background: #111;
       border-radius: 8px;
-      margin-bottom: 20px;
     }
     .telegram-box {
+      margin-top: 15px;
       padding: 12px 20px;
       border-radius: 6px;
       background: #0088cc;
@@ -34,7 +34,6 @@
       font-size: 16px;
       text-decoration: none;
       font-weight: bold;
-      transition: background 0.3s ease;
     }
     .telegram-box:hover {
       background: #0071aa;
@@ -42,50 +41,27 @@
   </style>
 </head>
 <body>
-  <!-- Streaming Player at the Top -->
-  <div id="player"></div>
-  <video id="fallbackVideo" class="hidden" controls playsinline></video>
+  <video id="video" controls autoplay playsinline></video>
 
-  <!-- Telegram Button -->
   <a class="telegram-box" href="https://t.me/YOUR_CHANNEL" target="_blank">
     Join Telegram
   </a>
 
   <script>
-    function getVideoUrl() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get("videoUrl") || params.get("videourl");
-    }
-
-    const videoUrl = getVideoUrl();
-    const fallback = document.getElementById("fallbackVideo");
-    const playerContainer = document.getElementById("player");
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoUrl = urlParams.get('videoUrl') || urlParams.get('videourl');
+    const video = document.getElementById('video');
 
     if (videoUrl) {
-      try {
-        const player = jwplayer("player").setup({
-          file: videoUrl,
-          width: "100%",
-          aspectratio: "16:9",
-          autostart: true,
-          mute: false,
-          controls: true,
-          stretching: "uniform",
-          preload: "auto"
-        });
-
-        player.on("error", () => {
-          playerContainer.style.display = "none";
-          fallback.classList.remove("hidden");
-          fallback.src = videoUrl;
-          fallback.autoplay = true;
-        });
-      } catch (e) {
-        playerContainer.style.display = "none";
-        fallback.classList.remove("hidden");
-        fallback.src = videoUrl;
-        fallback.autoplay = true;
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(videoUrl);
+        hls.attachMedia(video);
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = videoUrl;
       }
+    } else {
+      alert('No video URL provided.');
     }
   </script>
 </body>
