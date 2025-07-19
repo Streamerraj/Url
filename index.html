@@ -1,1 +1,63 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>JW Player</title><meta name="viewport" content="width=device-width,initial-scale=1"><script src="https://content.jwplatform.com/libraries/IDzF9Zmk.js"></script><style>body{margin:0;font-family:Arial;background:#000;color:#eee;text-align:center}#player{max-width:1000px;margin:20px auto;aspect-ratio:16/9}#status{font-size:12px;opacity:.8;padding:8px 14px;word-break:break-all}.hidden{display:none}video{width:100%;height:100%;background:#000}</style></head><body><div id="player"></div><video id="fb" class="hidden" controls playsinline></video><div id="status"></div><script>(()=>{const p=new URLSearchParams(location.search),u=p.get("videoUrl"),s=document.getElementById("status"),fb=document.getElementById("fb");function log(m){s.textContent=m;console.log("[PLAYER]",m)}if(!u){log("Use ?videoUrl=YOUR_LINK");return}let jw;try{jw=jwplayer("player").setup({file:u,width:"100%",aspectratio:"16:9",autostart:true,mute:false,controls:true,playbackRateControls:true,stretching:"uniform",preload:"auto"})}catch(e){log("JW init error: "+e.message);fallback();return}jw.on("levels",()=>{try{const lv=jw.getQualityLevels();if(!lv||!lv.length)return;let i=-1;lv.forEach((L,x)=>{(L.label||"").includes("360")&&(i=x)});if(i<0)lv.forEach((L,x)=>{L.height&&Math.abs(L.height-360)<50&&(i=x)});i>-1?(jw.setCurrentQuality(i),log("Forced 360p.")):log("360p not found.")}catch(er){log("Quality select err: "+er.message)}});jw.on("ready",()=>{log("Ready…");setTimeout(()=>{jw.getState()!=="playing"&&(jw.setMute(true),jw.play(true),setTimeout(()=>jw.setMute(false),800),log("Autoplay workaround used."))},500)});jw.on("error",e=>{log("JW Error: "+(e&&e.message?e.message:"Unknown"));fallback()});function fallback(){document.getElementById("player").classList.add("hidden");fb.classList.remove("hidden");fb.src=u;fb.autoplay=true;fb.muted=false;fb.oncanplay=()=>log("Fallback playing…");fb.onerror=()=>log("Fallback video error.")}})();</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>@cricmatchstream</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://content.jwplatform.com/libraries/IDzF9Zmk.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+    #player {
+      width: 90%;
+      max-width: 900px;
+      aspect-ratio: 16/9;
+    }
+    p {
+      margin-top: 10px;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div id="player"></div>
+  <p id="status">Loading...</p>
+
+  <script>
+    function getVideoUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("videoUrl") || params.get("videourl");
+    }
+
+    const videoUrl = getVideoUrl();
+    const status = document.getElementById("status");
+
+    if (!videoUrl) {
+      status.textContent = "No video URL provided. Use ?videourl=YOUR_STREAM_URL";
+    } else {
+      status.textContent = "Playing video: " + videoUrl;
+      jwplayer("player").setup({
+        file: videoUrl,
+        width: "100%",
+        aspectratio: "16:9",
+        autostart: true,
+        mute: false,
+        controls: true,
+        stretching: "uniform",
+        preload: "auto"
+      });
+    }
+  </script>
+</body>
+</html>
