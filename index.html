@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>@cricmatchstream</title>
+  <title>Live Stream</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://content.jwplatform.com/libraries/IDzF9Zmk.js"></script>
   <style>
@@ -14,25 +14,42 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start; /* Player moves to top */
       min-height: 100vh;
-      text-align: center;
+      padding-top: 10px;
     }
-    #player {
-      width: 90%;
+    #player, #fallbackVideo {
+      width: 100%;
       max-width: 900px;
       aspect-ratio: 16/9;
+      background: #111;
+      border-radius: 8px;
+      margin-bottom: 20px;
     }
-    p {
-      margin-top: 10px;
-      font-size: 14px;
-      opacity: 0.8;
+    .telegram-box {
+      padding: 12px 20px;
+      border-radius: 6px;
+      background: #0088cc;
+      color: #fff;
+      font-size: 16px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+    .telegram-box:hover {
+      background: #0071aa;
     }
   </style>
 </head>
 <body>
+  <!-- Streaming Player at the Top -->
   <div id="player"></div>
-  <p id="status">Loading...</p>
+  <video id="fallbackVideo" class="hidden" controls playsinline></video>
+
+  <!-- Telegram Button -->
+  <a class="telegram-box" href="https://t.me/YOUR_CHANNEL" target="_blank">
+    Join Telegram
+  </a>
 
   <script>
     function getVideoUrl() {
@@ -41,22 +58,34 @@
     }
 
     const videoUrl = getVideoUrl();
-    const status = document.getElementById("status");
+    const fallback = document.getElementById("fallbackVideo");
+    const playerContainer = document.getElementById("player");
 
-    if (!videoUrl) {
-      status.textContent = "No video URL provided. Use ?videourl=YOUR_STREAM_URL";
-    } else {
-      status.textContent = "Playing video: " + videoUrl;
-      jwplayer("player").setup({
-        file: videoUrl,
-        width: "100%",
-        aspectratio: "16:9",
-        autostart: true,
-        mute: false,
-        controls: true,
-        stretching: "uniform",
-        preload: "auto"
-      });
+    if (videoUrl) {
+      try {
+        const player = jwplayer("player").setup({
+          file: videoUrl,
+          width: "100%",
+          aspectratio: "16:9",
+          autostart: true,
+          mute: false,
+          controls: true,
+          stretching: "uniform",
+          preload: "auto"
+        });
+
+        player.on("error", () => {
+          playerContainer.style.display = "none";
+          fallback.classList.remove("hidden");
+          fallback.src = videoUrl;
+          fallback.autoplay = true;
+        });
+      } catch (e) {
+        playerContainer.style.display = "none";
+        fallback.classList.remove("hidden");
+        fallback.src = videoUrl;
+        fallback.autoplay = true;
+      }
     }
   </script>
 </body>
